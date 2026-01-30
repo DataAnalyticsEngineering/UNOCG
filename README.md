@@ -5,10 +5,10 @@
 [![Data][data-shield]][data-url]
 [![Documentation Status][docs-shield]][docs-url]
 [![PyPI](https://img.shields.io/pypi/v/unocg)](https://pypi.org/project/unocg/)
-[![pytest](https://github.com/DataAnalyticsEngineering/UNOCG/actions/workflows/ci.yml/badge.svg)](https://github.com/DataAnalyticsEngineering/UNOCG/actions/workflows/ci.yml)
-[![flake8](https://img.shields.io/badge/flake8-checked-blue.svg)](https://flake8.pycqa.org/)
-[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Python](https://img.shields.io/badge/python-3.11-purple.svg)](https://www.python.org/)
+<!--[![pytest](https://github.com/DataAnalyticsEngineering/UNOCG/actions/workflows/ci.yml/badge.svg)](https://github.com/DataAnalyticsEngineering/UNOCG/actions/workflows/ci.yml)
+[![flake8](https://img.shields.io/badge/flake8-checked-blue.svg)](https://flake8.pycqa.org/)
+[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)-->
 <!--[![MIT License][license-shield]][license-url]-->
 <!--[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)-->
 
@@ -86,7 +86,7 @@ pip install -e .[all]
 - `pip` packages listed in `pyproject.toml`
 - Supplemental data: [![Identifier](https://img.shields.io/badge/doi-10.18419%2Fdarus--5686-d45815.svg)](https://doi.org/10.18419/darus-5686)
 
-All necessary data can be downloaded from [DaRUS](https://darus.uni-stuttgart.de/) using the script [`download_data.sh`](data/download_data.sh).
+All necessary data can be downloaded from [DaRUS](https://darus.uni-stuttgart.de/) using the script [`download_data.sh`](data/download_data.sh) in the directory [`data`](data).
 
 ## Acknowledgments
 

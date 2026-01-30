@@ -93,7 +93,6 @@ class Problem:
         """
         return -(1 + self.n_dim)
 
-
     @property
     def n_grid(self) -> Union[torch.Size, Collection[int]]:
         return self._n_grid
