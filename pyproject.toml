@@ -3,16 +3,54 @@ name = "unocg"
 version = "0.0.1"
 authors = [
   { name="Julius Herb", email="herb@mib.uni-stuttgart.de" },
+  { name="Felix Fritzen", email="fritzen@mib.uni-stuttgart.de" },
 ]
 description = "UNO-CG"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
+keywords = ["UNO", "CG", "preconditioner", "PDE", "homogenization"]
+dependencies = [
+    "numpy",
+    "h5py",
+    "matplotlib",
+    "scipy",
+    "torch==2.10.0",
+    "torchinfo",
+    "tqdm",
+    "torchvision",
+    "pyvista[jupyter]",
+    "jupyterlab"
+]
+
+[project.optional-dependencies]
+dev = [
+    "jupytext~=1.16.4",
+    "jupyterlab~=4.2.4",
+    "pre_commit~=3.8.0",
+    "sphinx~=7.4.7",
+    "sphinx-rtd-theme~=2.0.0",
+    'myst-parser~=4.0.0',
+    'nbsphinx~=0.9.5',
+    'sphinx-gallery~=0.17.1',
+]
+naive = [
+    "torch-harmonics",
+    "opt_einsum",
+    "tensorly",
+    "neuraloperator==0.2.0",
+    "hiddenlayer~=0.3",
+    "zarr~=2.18.2",
+    "openpyxl~=3.1.5",
+]
+all = [
+    "unocg[dev]"
+]
 
 [project.urls]
 Homepage = "https://github.com/DataAnalyticsEngineering/UNOCG"
