@@ -1,6 +1,6 @@
 [project]
 name = "unocg"
-version = "0.0.1"
+version = "1.0.0"
 authors = [
   { name="Julius Herb", email="herb@mib.uni-stuttgart.de" },
   { name="Felix Fritzen", email="fritzen@mib.uni-stuttgart.de" },
@@ -16,37 +16,26 @@ license = "MIT"
 license-files = ["LICEN[CS]E*"]
 keywords = ["UNO", "CG", "preconditioner", "PDE", "homogenization"]
 dependencies = [
-    "numpy",
-    "h5py",
-    "matplotlib",
-    "scipy",
+    "numpy~=2.4.1",
+    "h5py~=3.15.1",
+    "matplotlib~=3.10.8",
+    "scipy~=1.17.0",
     "torch==2.10.0",
-    "torchinfo",
-    "tqdm",
-    "torchvision",
-    "pyvista[jupyter]",
-    "jupyterlab"
+    "tqdm~=4.67.1",
+    "torchvision~=0.25.0",
+    "pyvista[jupyter]~=0.46.5"
 ]
 
 [project.optional-dependencies]
 dev = [
     "jupytext~=1.16.4",
-    "jupyterlab~=4.2.4",
+    "jupyterlab~=4.5.3",
     "pre_commit~=3.8.0",
     "sphinx~=7.4.7",
     "sphinx-rtd-theme~=2.0.0",
     'myst-parser~=4.0.0',
     'nbsphinx~=0.9.5',
     'sphinx-gallery~=0.17.1',
-]
-naive = [
-    "torch-harmonics",
-    "opt_einsum",
-    "tensorly",
-    "neuraloperator==0.2.0",
-    "hiddenlayer~=0.3",
-    "zarr~=2.18.2",
-    "openpyxl~=3.1.5",
 ]
 all = [
     "unocg[dev]"

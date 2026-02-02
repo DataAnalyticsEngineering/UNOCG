@@ -3,9 +3,9 @@
 <!-- The badges we want to display -->
 [![DOI][paper-shield]][paper-url]
 [![Data][data-shield]][data-url]
-[![Documentation Status][docs-shield]][docs-url]
 [![PyPI](https://img.shields.io/pypi/v/unocg)](https://pypi.org/project/unocg/)
 [![Python](https://img.shields.io/badge/python-3.11-purple.svg)](https://www.python.org/)
+<!--[![Documentation Status][docs-shield]][docs-url]-->
 <!--[![pytest](https://github.com/DataAnalyticsEngineering/UNOCG/actions/workflows/ci.yml/badge.svg)](https://github.com/DataAnalyticsEngineering/UNOCG/actions/workflows/ci.yml)
 [![flake8](https://img.shields.io/badge/flake8-checked-blue.svg)](https://flake8.pycqa.org/)
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)-->
@@ -26,24 +26,26 @@ To address this, we introduce UNO-CG, a hybrid solver that accelerates conjugate
 As a preconditioner, we propose Unitary Neural Operators (UNOs) as a modification of the established Fourier Neural Operators.
 Our method can be interpreted as a data-driven discovery of Green's functions, which are then used much like expert knowledge to accelerate iterative solvers.
 
+<!--
 ## Documentation
 
 The documentation of this software, including examples on how to use **UNOCG**, can be found under [Documentation](https://DataAnalyticsEngineering.github.io/UNOCG/).
+-->
 
 ## Features
 
 UNO-CG (**unocg**) is a Python package that provides efficient implementations of solvers for homogenization problems, or parametric Partial Differential Equations (PDEs) in general.
-It includes an implementation of the Fourier-Accelerated Nodal Solvers (FANS) as a special case.
+It includes an implementation of the [Fourier-Accelerated Nodal Solvers (FANS)](https://doi.org/10.1007/s00466-017-1501-5) as a special case.
 
 The focus is on the following features:
 - support for common homogenization problems in computational mechanics, including thermal problems and mechanical problems
--support for common boundary conditions on the RVE (periodic, Dirichlet, Neumann, and combinations)
+- support for common boundary conditions on the RVE (periodic, Dirichlet, Neumann, and combinations)
 - completely based on PyTorch and hence supports GPU acceleration using NVIDIA CUDA or AMD ROCm, parallelization on CPUs using OpenMP, and automatic differentiation
 - solvers are implemented as iterative solvers in a matrix-free way that are accelerated by machine-learned preconditioners
 
 On the other hand, there are the following restrictions:
 - restriction to a FEM discretization on regular grids, i.e., parameters are defined as voxelized data; for unstructured meshes, classical FEM solvers are the better choice
-- optimized for solving small- and medium-sized homogenization problems in a many-query context, i.e., for many different microstructures, material parameters, and loadings; for large-sized homogenization problems, our MPI-based implementation of FANS for CPUs is the better choice
+- optimized for solving small- and medium-sized homogenization problems in a many-query context, i.e., for many different microstructures, material parameters, and loadings; for large-sized homogenization problems, our [MPI-based implementation of FANS](https://github.com/DataAnalyticsEngineering/FANS) for CPUs is the better choice
 
 Typical applications include:
 - solving homogenization problems in $\text{FE}^2$ simulations
