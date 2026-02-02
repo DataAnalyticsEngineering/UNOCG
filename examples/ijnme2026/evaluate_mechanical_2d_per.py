@@ -31,7 +31,6 @@ from unocg.preconditioners.torch import FansPreconditioner, UnoPreconditioner, J
 from unocg.transforms.fourier import DiscreteFourierTransform
 from unocg.utils.plotting import *
 from unocg.utils.evaluation import *
-from unocg import config
 from matplotlib.transforms import Bbox
 import time
 
@@ -47,6 +46,11 @@ quad_degree = 2
 bc = BC.PERIODIC
 device = "cuda" if torch.cuda.is_available() else "cpu"
 args = {'device': device, 'dtype': dtype}
+base_path = os.path.abspath(os.path.join(os.path.abspath(""), "..", ".."))
+data_path = os.path.abspath(os.path.join(base_path, "data"))
+results_path = os.path.abspath(os.path.join(data_path, "results"))
+if not os.path.exists(results_path):
+    os.makedirs(results_path)
 
 # %% [markdown] jupyter={"outputs_hidden": false}
 # ### Create problem
@@ -68,7 +72,7 @@ loadings = torch.tensor([[0.05, -0.05, 0.0]], **args)
 
 # %%
 microstructures = MicrostructureDataset(
-    file_name=os.path.join(config.data_path, "2d_microstructures.h5"),
+    file_name=os.path.join(data_path, "2d_microstructures.h5"),
     group_name="test",
     **args
 )
@@ -77,7 +81,7 @@ microstructure = microstructures[0]
 param_fields = problem.get_param_fields(microstructure.unsqueeze(0), params)
 
 if show_plots:
-    plot_ms(microstructure, show_axis=False, show_cbar=True, file=os.path.join(config.results_path, "2d_microstructure_2.pdf"))
+    plot_ms(microstructure, show_axis=False, show_cbar=True, file=os.path.join(results_path, "2d_microstructure_2.pdf"))
 
 # %% [markdown]
 # ### Compute reference solution using unpreconditioned CG:
@@ -89,8 +93,8 @@ solver_start = time.time()
 result_ref = solver.solve(param_fields, loadings, rtol=1e-12)
 solver_time = time.time() - solver_start
 sol_ref = result_ref["sol"]
-field_ref = problem.compute_field(result_ref["sol"], param_fields, loadings)
-print(f"CG solver converged after {result_ref["n_iter"]} iterations and {solver_time:.4f} s")
+field_ref = problem.compute_field(result_ref['sol'], param_fields, loadings)
+print(f"CG solver converged after {result_ref['n_iter']} iterations and {solver_time:.4f} s")
 
 # %%
 disp = field_ref[..., :2, :, :].squeeze(0)
@@ -106,14 +110,14 @@ plot_deformed_rve_2d(
     plot_boundary = False,
     vmin=[0., 0., 0.],
     vmax=[0.6, 0.6, 0.6],
-    file = os.path.join(config.results_path, "mechanical_2d_per_deformed.png")
+    file = os.path.join(results_path, "mechanical_2d_per_deformed.png")
 )
 
 # %% [markdown]
 # ### Load learned UNO preconditioner:
 
 # %%
-weights_uno = torch.load(os.path.join(config.data_path, "weights_uno_mechanical_2d_per.pt"), weights_only=True, map_location=device)
+weights_uno = torch.load(os.path.join(data_path, "weights_uno_mechanical_2d_per.pt"), weights_only=True, map_location=device)
 transform = DiscreteFourierTransform(dim=[-2, -1])
 uno_prec = UnoPreconditioner(problem, transform, weights_uno)
 
@@ -178,7 +182,7 @@ if show_plots:
     fig.tight_layout()
     bbox = fig.get_tightbbox()
     bbox = Bbox([[bbox.x0 - 0.05, bbox.y0 - 0.01], [bbox.x1 + 0.0, bbox.y1 + 0.05]])
-    plt.savefig(os.path.join(config.results_path, "convergence_mechanical_2d_per_disp.pdf"), dpi=300, bbox_inches=bbox)
+    plt.savefig(os.path.join(results_path, "convergence_mechanical_2d_per_disp.pdf"), dpi=300, bbox_inches=bbox)
     plt.show()
 
 # %% [markdown]

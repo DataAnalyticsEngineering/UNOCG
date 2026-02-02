@@ -31,7 +31,6 @@ from unocg.preconditioners.torch import FansPreconditioner, UnoPreconditioner, J
 from unocg.transforms.fourier import DiscreteFourierTransform
 from unocg.utils.plotting import *
 from unocg.utils.evaluation import *
-from unocg import config
 from matplotlib.transforms import Bbox
 import time
 
@@ -46,6 +45,11 @@ quad_degree = 2
 bc = BC.PERIODIC
 device = "cuda" if torch.cuda.is_available() else "cpu"
 args = {'device': device, 'dtype': dtype}
+base_path = os.path.abspath(os.path.join(os.path.abspath(""), "..", ".."))
+data_path = os.path.abspath(os.path.join(base_path, "data"))
+results_path = os.path.abspath(os.path.join(data_path, "results"))
+if not os.path.exists(results_path):
+    os.makedirs(results_path)
 
 # %% [markdown] jupyter={"outputs_hidden": false}
 # ### Define problem
@@ -64,7 +68,7 @@ loadings = torch.eye(2, **args)[1:]
 
 # %%
 microstructures = MicrostructureDataset(
-    file_name=os.path.join(config.data_path, "2d_microstructures.h5"),
+    file_name=os.path.join(data_path, "2d_microstructures.h5"),
     group_name="test",
     **args
 )
@@ -73,7 +77,7 @@ microstructure = microstructures[1]
 param_fields = problem.get_param_fields(microstructure.unsqueeze(0), params)
 
 if show_plots:
-    plot_ms(microstructure, show_axis=False, show_cbar=True, file=os.path.join(config.results_path, "2d_microstructure_1.pdf"))
+    plot_ms(microstructure, show_axis=False, show_cbar=True, file=os.path.join(results_path, "2d_microstructure_1.pdf"))
 
 # %% [markdown]
 # ### Compute reference solution using unpreconditioned CG
@@ -84,9 +88,9 @@ print("Computing reference solution using unpreconditioned CG...")
 solver_start = time.time()
 result_ref = cg_solver.solve(param_fields, loadings, rtol=1e-12)
 solver_time = time.time() - solver_start
-sol_ref = result_ref["sol"]
-field_ref = problem.compute_field(result_ref["sol"], param_fields, loadings)
-print(f"CG solver converged after {result_ref["n_iter"]} iterations and {solver_time:.4f} s")
+sol_ref = result_ref['sol']
+field_ref = problem.compute_field(result_ref['sol'], param_fields, loadings)
+print(f"CG solver converged after {result_ref['n_iter']} iterations and {solver_time:.4f} s")
 
 # %%
 if show_plots:
@@ -111,15 +115,15 @@ if show_plots:
         ax_.set_xticks([])
         ax_.set_yticks([])
     plt.tight_layout()
-    plt.savefig(os.path.join(config.results_path, "results_thermal_2d_per.pdf"), dpi=300)
+    plt.savefig(os.path.join(results_path, "results_thermal_2d_per.pdf"), dpi=300)
     plt.show()
 
 # %% [markdown] jupyter={"outputs_hidden": false}
 # ### Load learned UNO preconditioners:
 
 # %%
-weights_uno_naive = torch.load(os.path.join(config.data_path, "weights_uno_naive_thermal_2d_per.pt"), weights_only=True, map_location=device)
-weights_uno = torch.load(os.path.join(config.data_path, "weights_uno_thermal_2d_per.pt"), weights_only=True, map_location=device)
+weights_uno_naive = torch.load(os.path.join(data_path, "weights_uno_naive_thermal_2d_per.pt"), weights_only=True, map_location=device)
+weights_uno = torch.load(os.path.join(data_path, "weights_uno_thermal_2d_per.pt"), weights_only=True, map_location=device)
 
 trafo = DiscreteFourierTransform(dim=[-2, -1])
 uno_naive_prec = UnoPreconditioner(problem, trafo, weights_uno_naive)
@@ -148,7 +152,6 @@ jac_prec = JacobiPreconditioner(problem, jac_weights)
 # ### Apply FANS and learned UNO preconditioners on initial residual
 
 # %%
-rhs_layer = problem.get_rhs_module(dtype=dtype, device=device)
 rhs = problem.assemble_rhs(param_fields, loadings)
 init_res = problem.reshape_field(rhs)
 precs = [fans_prec, uno_prec, uno_naive_prec]
@@ -158,7 +161,7 @@ if show_plots:
     fig, ax = plt.subplots(1, 1 + len(precs), figsize=[plot_width * 1.5, 2.0], dpi=300, squeeze=False)
     plot_prec_action(ax, field_ref, init_res, precs, labels, centered=True)
     plt.tight_layout()
-    plt.savefig(os.path.join(config.results_path, "prec_action_thermal_2d_per.pdf"), dpi=300)
+    plt.savefig(os.path.join(results_path, "prec_action_thermal_2d_per.pdf"), dpi=300)
     plt.show()
 
 # %% [markdown]
@@ -217,7 +220,7 @@ if show_plots:
     plt.tight_layout()
     bbox = fig.get_tightbbox()
     bbox = Bbox([[bbox.x0 - 0.05, bbox.y0 - 0.02], [bbox.x1 + 0.05, bbox.y1 + 0.05]])
-    plt.savefig(os.path.join(config.results_path, "convergence_thermal_2d_per.pdf"), dpi=300, bbox_inches=bbox)
+    plt.savefig(os.path.join(results_path, "convergence_thermal_2d_per.pdf"), dpi=300, bbox_inches=bbox)
     plt.show()
 
 # %% [markdown]
@@ -282,7 +285,7 @@ if show_plots:
     ax.set_xlabel(r"iterations until $||\underline{r}||_{\infty} < 10^{-6} ||\underline{r}^{(0)}||_{\infty}$ is reached $[-]$")
     ax.set_ylabel(r"number of samples $[-]$")
     fig.tight_layout()
-    plt.savefig(os.path.join(config.results_path, "convergence_histogram_thermal_2d_per_rtol1e-6.pdf"), dpi=300)
+    plt.savefig(os.path.join(results_path, "convergence_histogram_thermal_2d_per_rtol1e-6.pdf"), dpi=300)
     plt.show()
 
 # %%

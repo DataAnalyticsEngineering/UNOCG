@@ -31,8 +31,8 @@ from unocg.preconditioners.torch import FansPreconditioner, UnoPreconditioner, J
 from unocg.transforms.fourier import DiscreteFourierTransform
 from unocg.utils.plotting import *
 from unocg.utils.evaluation import *
-from unocg import config
 from matplotlib.transforms import Bbox
+import time
 
 try:
     import pyvista as pv
@@ -53,8 +53,13 @@ torch.set_float32_matmul_precision("high")
 torch.set_default_dtype(dtype)
 quad_degree = 2
 bc = BC.PERIODIC
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda:1" if torch.cuda.is_available() else "cpu"
 args = {'device': device, 'dtype': dtype}
+base_path = os.path.abspath(os.path.join(os.path.abspath(""), "..", ".."))
+data_path = os.path.abspath(os.path.join(base_path, "data"))
+results_path = os.path.abspath(os.path.join(data_path, "results"))
+if not os.path.exists(results_path):
+    os.makedirs(results_path)
 
 # %% [markdown] jupyter={"outputs_hidden": false}
 # ### Define problem:
@@ -76,7 +81,7 @@ loadings = 0.05 * torch.tensor([[0.5, -1.0, 0.5, 0.0, 0.0, 0.0]], **args)
 
 # %%
 microstructures = MicrostructureDataset(
-    file_name=os.path.join(config.data_path, "3d_microstructures.h5"),
+    file_name=os.path.join(data_path, "3d_microstructures.h5"),
     group_name="test",
     **args
 )
@@ -87,7 +92,7 @@ param_fields = problem.get_param_fields(microstructure.unsqueeze(0), params)
 if show_plots and use_pyvista:
     pl = pv.Plotter()
     pl.add_volume(microstructure.cpu().float().numpy(), cmap=["red"], shade=True, scalar_bar_args={"vertical": True, "height": 0.9, "n_labels": 2, "title": ""})
-    pl.screenshot(filename=os.path.join(config.results_path, "3d_microstructure_2.png"), transparent_background=True, window_size=[600,600])
+    pl.screenshot(filename=os.path.join(results_path, "3d_microstructure_2.png"), transparent_background=True, window_size=[600,600])
     pl.show()
 
 # %% [markdown]
@@ -100,8 +105,8 @@ solver_start = time.time()
 result_ref = cg_solver.solve(param_fields, loadings, rtol=1e-12)
 solver_time = time.time() - solver_start
 sol_ref = result_ref["sol"]
-field_ref = problem.compute_field(result_ref["sol"], param_fields, loadings)
-print(f"CG solver converged after {result_ref["n_iter"]} iterations and {solver_time:.4f} s")
+field_ref = problem.compute_field(result_ref['sol'], param_fields, loadings)
+print(f"CG solver converged after {result_ref['n_iter']} iterations and {solver_time:.4f} s")
 
 # %%
 disp = field_ref[0, ..., :3, :, :, :]
@@ -110,13 +115,13 @@ stress_norm = stress.norm(dim=problem.ch_dim).cpu().detach()
 
 if show_plots and use_pyvista:
     plot_deformed_rve_3d(problem, disp, stress_norm, loadings, deformation_scaling=8,
-                         vmin=0, vmax=26, file=os.path.join(config.results_path, "mechanical_3d_per_deformed.png"), figsize=[600, 629])
+                         vmin=0, vmax=26, file=os.path.join(results_path, "mechanical_3d_per_deformed.png"), figsize=[600, 629])
 
 # %% [markdown] jupyter={"outputs_hidden": false}
 # ### Load learned UNO preconditioner
 
 # %%
-weights_uno = torch.load(os.path.join(config.data_path, "weights_uno_mechanical_3d_per.pt"), weights_only=True, map_location=device)
+weights_uno = torch.load(os.path.join(data_path, "weights_uno_mechanical_3d_per.pt"), weights_only=True, map_location=device)
 trafo = DiscreteFourierTransform(dim=[-3, -2, -1])
 uno_prec = UnoPreconditioner(problem, trafo, weights_uno)
 
@@ -168,8 +173,8 @@ ax[0,0].legend()
 fig.tight_layout()
 bbox = fig.get_tightbbox()
 bbox = Bbox([[bbox.x0 - 0.05, bbox.y0 - 0.01], [bbox.x1 + 0.0, bbox.y1 + 0.05]])
-plt.savefig(os.path.join(config.results_path, "convergence_mechanical_3d_per.pdf"), dpi=300, bbox_inches=bbox)
-plt.savefig(os.path.join(config.results_path, "convergence_mechanical_3d_per.png"), dpi=300, bbox_inches=bbox)
+plt.savefig(os.path.join(results_path, "convergence_mechanical_3d_per.pdf"), dpi=300, bbox_inches=bbox)
+plt.savefig(os.path.join(results_path, "convergence_mechanical_3d_per.png"), dpi=300, bbox_inches=bbox)
 plt.show()
 
 # %% [markdown]
