@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: If you use this software, please cite both the article from preferred-citation and the software itself.
+authors:
+- family-names: "Herb"
+  given-names: "Julius"
+  orcid: "https://orcid.org/0000-0003-1628-6667"
+- family-names: "Fritzen"
+  given-names: "Felix"
+  orcid: "https://orcid.org/0000-0003-4926-0068"
+title: UNO-CG: Accelerating Conjugate Gradient Solvers with Unitary Neural Operators
+version: 1.0.0
+url: http://dx.doi.org/10.1002/nme.70277
+doi: 10.1002/nme.70277
+date-released: '2026-02-02'
+preferred-citation:
+  authors:
+    - family-names: Herb
+      given-names: Julius
+    - family-names: Fritzen
+      given-names: Felix
+  title: Accelerating Conjugate Gradient Solvers for Homogenization Problems with Unitary Neural Operators
+  doi: 10.1002/nme.70277
+  url: http://dx.doi.org/10.1002/nme.70277
+  type: article-journal
+  year: '2026'
+  publisher:
+    name: Wiley
