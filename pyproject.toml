@@ -1,6 +1,6 @@
 [project]
 name = "unocg"
-version = "0.0.3"
+version = "1.0.0"
 authors = [
   { name="Julius Herb", email="herb@mib.uni-stuttgart.de" },
   { name="Felix Fritzen", email="fritzen@mib.uni-stuttgart.de" },
