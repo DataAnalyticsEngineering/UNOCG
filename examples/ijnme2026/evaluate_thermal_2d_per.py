@@ -3,22 +3,19 @@
 #   jupytext:
 #     text_representation:
 #       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.19.1
+#       format_name: light
+#       format_version: '1.5'
+#       jupytext_version: 1.16.7
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
-# %% [markdown]
 # # UNO-CG performance evaluation: thermal problem in 2D with periodic BC
 
-# %% [markdown]
 # ### Imports:
 
-# %%
 import os
 import torch
 from torch.utils.data import DataLoader
@@ -34,10 +31,8 @@ from unocg.utils.evaluation import *
 from matplotlib.transforms import Bbox
 import time
 
-# %% [markdown]
 # ### Configuration:
 
-# %%
 show_plots = True
 dtype = torch.float64
 torch.set_default_dtype(dtype)
@@ -51,10 +46,10 @@ results_path = os.path.abspath(os.path.join(data_path, "results"))
 if not os.path.exists(results_path):
     os.makedirs(results_path)
 
-# %% [markdown] jupyter={"outputs_hidden": false}
+# + [markdown] jupyter={"outputs_hidden": false}
 # ### Define problem
 
-# %% jupyter={"outputs_hidden": false}
+# + jupyter={"outputs_hidden": false}
 shape = (400, 400)
 material = LinearHeatConduction(n_dim=2, **args)
 problem = ThermalProblem(shape, material=material, quad_degree=quad_degree, bc=bc)
@@ -62,11 +57,11 @@ problem = ThermalProblem(shape, material=material, quad_degree=quad_degree, bc=b
 kappa0, kappa1 = 1.0, 0.2
 params = torch.tensor([kappa0, kappa1], **args).reshape(2,1)
 loadings = torch.eye(2, **args)[1:]
+# -
 
-# %% [markdown]
 # ### Load microstructure from file:
 
-# %%
+# +
 microstructures = MicrostructureDataset(
     file_name=os.path.join(data_path, "2d_microstructures.h5"),
     group_name="test",
@@ -78,11 +73,11 @@ param_fields = problem.get_param_fields(microstructure.unsqueeze(0), params)
 
 if show_plots:
     plot_ms(microstructure, show_axis=False, show_cbar=True, file=os.path.join(results_path, "2d_microstructure_1.pdf"))
+# -
 
-# %% [markdown]
 # ### Compute reference solution using unpreconditioned CG
 
-# %% jupyter={"outputs_hidden": false}
+# + jupyter={"outputs_hidden": false}
 cg_solver = CgSolver(problem)
 print("Computing reference solution using unpreconditioned CG...")
 solver_start = time.time()
@@ -91,8 +86,8 @@ solver_time = time.time() - solver_start
 sol_ref = result_ref['sol']
 field_ref = problem.compute_field(result_ref['sol'], param_fields, loadings)
 print(f"CG solver converged after {result_ref['n_iter']} iterations and {solver_time:.4f} s")
+# -
 
-# %%
 if show_plots:
     temp = field_ref[..., :1, :, :].squeeze(0)
     flux = field_ref[..., 1:, :, :].squeeze(0)
@@ -118,40 +113,36 @@ if show_plots:
     plt.savefig(os.path.join(results_path, "results_thermal_2d_per.pdf"), dpi=300)
     plt.show()
 
-# %% [markdown] jupyter={"outputs_hidden": false}
+# + [markdown] jupyter={"outputs_hidden": false}
 # ### Load learned UNO preconditioners:
 
-# %%
+# +
 weights_uno_naive = torch.load(os.path.join(data_path, "weights_uno_naive_thermal_2d_per.pt"), weights_only=True, map_location=device)
 weights_uno = torch.load(os.path.join(data_path, "weights_uno_thermal_2d_per.pt"), weights_only=True, map_location=device)
 
 trafo = DiscreteFourierTransform(dim=[-2, -1])
 uno_naive_prec = UnoPreconditioner(problem, trafo, weights_uno_naive)
 uno_prec = UnoPreconditioner(problem, trafo, weights_uno)
+# -
 
-# %% [markdown]
 # ### Create FANS preconditioner:
 
-# %%
 params_ref = params.mean()
 cond_ref = problem.conductivity(params_ref)
 fans_prec = FansPreconditioner(problem, cond_ref)
 
-# %% [markdown]
 # ### Create Jacobi Preconditioner:
 #
 # In contrast to FANS and UNO, this preconditioner depends on the stiffness matrix, i.e., changes together with the microstructure
 
-# %%
 A = problem.assemble_matrix(param_fields)
 A_diag = problem.sparse_diag(A)
 jac_weights = 1.0 / A_diag
 jac_prec = JacobiPreconditioner(problem, jac_weights)
 
-# %% [markdown]
 # ### Apply FANS and learned UNO preconditioners on initial residual
 
-# %%
+# +
 rhs = problem.assemble_rhs(param_fields, loadings)
 init_res = problem.reshape_field(rhs)
 precs = [fans_prec, uno_prec, uno_naive_prec]
@@ -163,11 +154,11 @@ if show_plots:
     plt.tight_layout()
     plt.savefig(os.path.join(results_path, "prec_action_thermal_2d_per.pdf"), dpi=300)
     plt.show()
+# -
 
-# %% [markdown]
 # ### Run CG method with different preconditioners:
 
-# %%
+# +
 rtol = 1e-11
 max_iter = 10000
 solver_args = {'rtol': rtol, 'max_iter': max_iter}
@@ -198,7 +189,7 @@ print(f"Jac-CG converged after {jac_result['n_iter']} iterations")
 cg_result = cg_solver.solve(param_fields, loadings, loss_callback=loss_callback)
 print(f"CG converged after {cg_result['n_iter']} iterations")
 
-# %%
+# +
 results = [fans_result, uno_result, uno_naive_result, jac_result, cg_result]
 labels = ["FANS", "UNO-CG", "UNO-CG (naive)", "Jac-CG", "CG"]
 metrics = ["temp", "flux", "res"]
@@ -222,34 +213,28 @@ if show_plots:
     bbox = Bbox([[bbox.x0 - 0.05, bbox.y0 - 0.02], [bbox.x1 + 0.05, bbox.y1 + 0.05]])
     plt.savefig(os.path.join(results_path, "convergence_thermal_2d_per.pdf"), dpi=300, bbox_inches=bbox)
     plt.show()
+# -
 
-# %% [markdown]
 # ### Runtime measurements
 
-# %%
 cg_module = cg_solver.get_module(**args, rtol=1e-6)
 jac_module = jac_solver.get_module(**args, rtol=1e-6)
 fans_module = fans_solver.get_module(**args, rtol=1e-6)
 unocg_module = uno_solver.get_module(**args, rtol=1e-6)
 
-# %%
 benchmark_cg(fans_module, param_fields, loadings, device=device, n_runs=100);
 
-# %%
 benchmark_cg(unocg_module, param_fields, loadings, device=device, n_runs=100);
 
-# %%
 benchmark_cg(jac_module, param_fields, loadings, device=device, n_runs=100);
 
-# %%
 benchmark_cg(cg_module, param_fields, loadings, device=device, n_runs=100);
 
-# %% [markdown]
 # ## Robustness study on all test samples
 #
 # The following evaluation on the entire test data set can take some time depending on the hardware used
 
-# %%
+# +
 microstructure_batch = next(iter(data_loader))
 param_batch = problem.get_param_fields(microstructure_batch, params)
 print(f"Solving a batch of {param_batch.shape[0]} samples...")
@@ -266,8 +251,8 @@ print(f"UNO-CG (naive) converged after {uno_naive_result_batch['n_iter']} iterat
 
 cg_result_batch = cg_solver.solve(param_batch, rtol=rtol)
 print(f"CG converged after {cg_result_batch['n_iter']} iterations")
+# -
 
-# %%
 rtol = 1e-6
 if show_plots:
     fig, ax = plt.subplots(1, 1, figsize=[plot_width * 0.75, 3.0], dpi=300)
@@ -288,4 +273,4 @@ if show_plots:
     plt.savefig(os.path.join(results_path, "convergence_histogram_thermal_2d_per_rtol1e-6.pdf"), dpi=300)
     plt.show()
 
-# %%
+
