@@ -1,6 +1,6 @@
 [project]
 name = "unocg"
-version = "1.0.0"
+version = "0.0.3"
 authors = [
   { name="Julius Herb", email="herb@mib.uni-stuttgart.de" },
   { name="Felix Fritzen", email="fritzen@mib.uni-stuttgart.de" },
@@ -23,19 +23,19 @@ dependencies = [
     "torch==2.10.0",
     "tqdm~=4.67.1",
     "torchvision~=0.25.0",
-    "pyvista[jupyter]~=0.46.5"
+    "pyvista[jupyter]~=0.46.5",
+    "jupyterlab~=4.5.3",
 ]
 
 [project.optional-dependencies]
 dev = [
     "jupytext~=1.16.4",
-    "jupyterlab~=4.5.3",
     "pre_commit~=3.8.0",
     "sphinx~=7.4.7",
     "sphinx-rtd-theme~=2.0.0",
-    'myst-parser~=4.0.0',
-    'nbsphinx~=0.9.5',
-    'sphinx-gallery~=0.17.1',
+    "myst-parser~=4.0.0",
+    "nbsphinx~=0.9.5",
+    "sphinx-gallery~=0.17.1",
 ]
 all = [
     "unocg[dev]"
